@@ -2,6 +2,8 @@
 #'
 #' Provides a brief summary of the package libraries on your machine. Yay!
 #'
+#' @param sizes Logical: do you want to know the size occupied by the files in your library.
+#'
 #' @return A data.frame containing the count of packages in each of the user's
 #'   libraries
 #' @export
@@ -10,13 +12,20 @@
 #' lib_summary()
 
 
-lib_summary <- function() {
-  ...
-}
-lib_summary <- function() {
-  pkgs <- utils::installed.packages() #take all packages on the machine
-  pkg_tbl <- table(pkgs[, "LibPath"]) #tabulates by library path
-  pkg_df <- as.data.frame(pkg_tbl, stringsAsFactors = FALSE) #turns into dataframe
-  names(pkg_df) <- c("Library", "n_packages") #gives it column names
-  pkg_df #returns dataframe
+lib_summary <- function(sizes = FALSE) {
+  pkgs <- utils::installed.packages()
+  pkg_tbl <- table(pkgs[, "LibPath"])
+  pkg_df <- as.data.frame(pkg_tbl, stringsAsFactors = FALSE)
+  names(pkg_df) <- c("Library", "n_packages")
+
+  if (sizes) {
+    pkg_df$lib_size <- vapply(
+      pkg_df$Library,
+      function(x) {
+        sum(fs::file_size(fs::dir_ls(x, recurse = TRUE)))
+      },
+      FUN.VALUE = numeric(1)
+    )
+  }
+  pkg_df
 }
